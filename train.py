@@ -181,3 +181,42 @@ def main(args):
                         is_best, checkpoint_folder=args.checkpoint_folder)
         print(f"Epoch {epoch+1:d}. train_loss: {train_loss:.8f}. val_loss: {val_loss:.8f}. Best Epoch: {best_epoch+1:d}. Best val loss: {best_loss:.8f}.")
 
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='DeepSDF')
+
+    parser.add_argument("-e", "--evaluate", default=False, action="store_true",
+                        help="Activate test mode - Evaluate model on val/test set (no training)")
+
+    # paths you may want to adjust
+    parser.add_argument("--input_pts", default="data/bunny-1000.pts", type=str, help="Input point cloud")
+    parser.add_argument("--checkpoint_folder", default="checkpoints/", type=str, help="Folder to save checkpoints")
+    parser.add_argument("--resume_file", default="model_best.pth.tar", type=str,
+                        help="Path to retrieve latest checkpoint file relative to checkpoint folder")
+
+    # hyperameters of network/options for training
+    parser.add_argument("--weight_decay", default=1e-4, type=float, help="Weight decay/L2 regularization on weights")
+    parser.add_argument("--lr", default=1e-4, type=float, help="Initial learning rate")
+    parser.add_argument("--schedule", type=int, nargs="+", default=[40, 50],
+                        help="Decrease learning rate at these milestone epochs.")
+    parser.add_argument("--gamma", default=0.1, type=float,
+                        help="Decays the learning rate of each parameter group by gamma once the number of epoch reaches one of the milestone epochs")
+    parser.add_argument("--start_epoch", default=0, type=int, help="Start from specified epoch number")
+    parser.add_argument("--epochs", default=100, type=int,
+                        help="Number of epochs to train (when loading a previous model, it will train for an extra number of epochs)")
+    parser.add_argument("--train_batch", default=512, type=int, help="Batch size for training")
+    parser.add_argument("--train_split_ratio", default=0.8, type=float, help="ratio of training split")
+    parser.add_argument("--N_samples", default=100, type=float,
+                        help="for each input point, N samples are used for training or validation")
+    parser.add_argument("--sample_std", default=0.05, type=float,
+                        help="we perturb each surface point along normal direction with mean-zero Gaussian noise with the given standard deviation")
+    parser.add_argument("--clamping_distance", default=0.1, type=float, help="clamping distance for sdf")
+
+    # various options for testing and evaluation
+    parser.add_argument("--test_batch", default=2048, type=int, help="Batch size for testing")
+    parser.add_argument("--grid_N", default=128, type=int, help="construct a 3D NxNxN grid containing the point cloud")
+    parser.add_argument("--max_xyz", default=1.0, type=float, help="largest xyz coordinates")
+
+    args = parser.parse_args()
+    print(args)
+    main(args)
