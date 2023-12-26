@@ -10,6 +10,51 @@ from utils import normalize_pts, normalize_normals, SdfDataset, mkdir_p, isdir, 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
+# function to save a checkpoint during training, including the best model so far
+def save_checkpoint(state, is_best, checkpoint_folder='checkpoints/', filename='checkpoint.pth.tar'):
+    checkpoint_file = os.path.join(checkpoint_folder, 'checkpoint_{}.pth.tar'.format(state['epoch']))
+    torch.save(state, checkpoint_file)
+    if is_best:
+        shutil.copyfile(checkpoint_file, os.path.join(checkpoint_folder, 'model_best.pth.tar'))
+
+
+def train(dataset, model, optimizer, args):
+    model.train()  # switch to train mode
+    loss_sum = 0.0
+    loss_count = 0.0
+    sigma = 0.1
+    num_batch = len(dataset)
+    for i in range(num_batch):
+        data = dataset[i]  # a dict
+        xyz_tensor = data['xyz'].to(device)
+        sdf_gt_tensor = data['gt_sdf'].to(device)
+
+        # Forward pass
+        optimizer.zero_grad()
+        sdf_pred_tensor = model(xyz_tensor)
+
+        # Compute loss
+        clamped_sdf_pred_tensor = torch.clamp(sdf_pred_tensor, -sigma, sigma)
+
+        clamped_sdf_gt_tensor = torch.clamp(sdf_gt_tensor, -sigma, sigma)
+        clamped_sdf_gt_tensor = clamped_sdf_gt_tensor.view(-1, 1)
+        loss_tensor = torch.abs(clamped_sdf_pred_tensor - clamped_sdf_gt_tensor)
+        loss = torch.sum(loss_tensor)
+        # a = clamped_sdf_pred_tensor - clamped_sdf_gt_tensor
+        # print(loss_tensor.shape)
+
+        # Backward pass
+        loss.backward()
+        optimizer.step()
+
+        # Update loss stats
+        loss_sum += loss.item() * xyz_tensor.shape[0]
+        loss_count += xyz_tensor.shape[0]
+
+    return loss_sum / loss_count
+
+
+# validation function
 def main(args):
     best_loss = 2e10
     best_epoch = -1
