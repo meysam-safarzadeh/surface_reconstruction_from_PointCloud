@@ -55,6 +55,70 @@ def train(dataset, model, optimizer, args):
 
 
 # validation function
+def val(dataset, model, optimizer, args):
+    model.eval()  # switch to test mode
+    loss_sum = 0.0
+    loss_count = 0.0
+    sigma = 0.1
+    num_batch = len(dataset)
+    for i in range(num_batch):
+        data = dataset[i]  # a dict
+        xyz_tensor = data['xyz'].to(device)
+        sdf_gt_tensor = data['gt_sdf'].to(device)
+
+        # Forward pass
+        optimizer.zero_grad()
+        sdf_pred_tensor = model(xyz_tensor)
+
+        # Compute loss
+        clamped_sdf_pred_tensor = torch.clamp(sdf_pred_tensor, -sigma, sigma)
+        clamped_sdf_gt_tensor = torch.clamp(sdf_gt_tensor, -sigma, sigma)
+        clamped_sdf_gt_tensor = clamped_sdf_gt_tensor.view(-1, 1)
+        loss_tensor = torch.abs(clamped_sdf_pred_tensor - clamped_sdf_gt_tensor)
+        loss = torch.sum(loss_tensor)
+
+        # Backward pass
+        loss.backward()
+        optimizer.step()
+
+        # Update loss stats
+        loss_sum += loss.item() * xyz_tensor.shape[0]
+        loss_count += xyz_tensor.shape[0]
+
+    return loss_sum / loss_count
+
+
+# testing function
+def test(dataset, model, args):
+    model.eval()  # switch to test mode
+    num_batch = len(dataset)
+    number_samples = dataset.number_samples
+    grid_shape = dataset.grid_shape
+    IF = np.zeros((number_samples, ))
+    start_idx = 0
+    for i in range(num_batch):
+        data = dataset[i]  # a dict
+        xyz_tensor = data['xyz'].to(device)
+        this_bs = xyz_tensor.shape[0]
+        end_idx = start_idx + this_bs
+        with torch.no_grad():
+            pred_sdf_tensor = model(xyz_tensor)
+            pred_sdf_tensor = torch.clamp(pred_sdf_tensor, -args.clamping_distance, args.clamping_distance)
+        pred_sdf = pred_sdf_tensor.cpu().squeeze().numpy()
+        IF[start_idx:end_idx] = pred_sdf
+        start_idx = end_idx
+    IF = np.reshape(IF, grid_shape)
+
+    verts, triangles = showMeshReconstruction(IF)
+    with open('test.obj', 'w') as outfile:
+        for v in verts:
+            outfile.write( "v " + str(v[0]) + " " + str(v[1]) + " " + str(v[2]) + "\n" )
+        for f in triangles:
+            outfile.write( "f " + str(f[0]+1) + " " + str(f[1]+1) + " " + str(f[2]+1) + "\n" )
+    outfile.close()
+    return
+
+
 def main(args):
     best_loss = 2e10
     best_epoch = -1
