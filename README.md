@@ -23,6 +23,7 @@ This repository contains the implementation of a neural implicit surface reconst
 
 ### Requirements
 
+- python 3.10
 - torch 2.1.2
 - numpy 1.26.2
 - open3d 0.17.0
