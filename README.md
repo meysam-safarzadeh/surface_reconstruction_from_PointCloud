@@ -34,7 +34,7 @@ First, clone the repository:
 
 ```bash
 git clone https://github.com/meysam-safarzadeh/surface_reconstruction_from_PointCloud.git
-cd surface_reconstruction_from_PointCloud
+cd surface_reconstruction_from_PointCloud/
 pip install -r requirements.txt
 ```
 
