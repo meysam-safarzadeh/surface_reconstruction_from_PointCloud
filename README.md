@@ -24,5 +24,5 @@ This repository implements a neural implicit surface reconstruction model based 
 First, clone the repository:
 
 ```bash
-git clone [Repository URL]
-cd [Repository Name]
+git clone https://github.com/meysam-safarzadeh/surface_reconstruction_from_PointCloud.git
+cd surface_reconstruction_from_PointCloud
