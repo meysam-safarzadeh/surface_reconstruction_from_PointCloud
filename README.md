@@ -31,7 +31,13 @@ This repository contains the implementation of a neural implicit surface reconst
 
 ### Installation
 
-First, clone the repository:
+Create a new conda environment and install the required packages:
+```bash
+conda create -n deepsdf_env python=3.10
+conda activate deepsdf_env
+```
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/meysam-safarzadeh/surface_reconstruction_from_PointCloud.git
