@@ -14,6 +14,7 @@ This repository contains the implementation of a neural implicit surface reconst
 
 - `checkpoints/`: Stores trained model checkpoints.
 - `data/`: Dataset directory.
+- `images/`: Stores result images for the README file.
 - `model.py`: Neural network architecture.
 - `train.py`: Training procedure implementation.
 - `utils.py`: Utility functions for training point sampling.
@@ -120,7 +121,7 @@ Implemented in `utils.py`, the sampling of training points and their SDF values 
 - Sampling training 3D points around the given surface points of the point cloud.
 - Sampling is done along the normal directions of the surface points.
 
-### Results
+## Results
 
 The implementation successfully reconstructs various 3D shapes, as demonstrated in the figures below:
 
@@ -135,6 +136,7 @@ The implementation successfully reconstructs various 3D shapes, as demonstrated 
 
   
 - Figure 3: Reconstructed Sphere
+
   ![Reconstructed Sphere](images/sphere.jpg)
 
 
